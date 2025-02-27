@@ -8,6 +8,9 @@ const images = [
   { url: "https://picsum.photos/id/239/200/300" },
 ];
 
+let errorMessage = document.getElementById('error');
+
+btn.addEventListener("click" , downloadImage)
 function downloadImage(link){
 	return new Promise((resolve , reject)=> {
 		let random = parseInt(Math.random()*10000)
@@ -43,6 +46,7 @@ Promise.all(arr)
 })
 .catch(error =>{
 	console.log("Error :- ",error.message)
+	errorMessage.innerText=`error.message`;
 })
 
 
