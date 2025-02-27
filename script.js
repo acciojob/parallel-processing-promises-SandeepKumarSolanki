@@ -1,5 +1,7 @@
 const output = document.getElementById("output");
 const btn = document.getElementById("download-images-button");
+const loading = document.getElementById("loading");
+const errorMessage = document.getElementById("error");
 
 const images = [
   { url: "https://picsum.photos/id/237/200/300" },
@@ -7,28 +9,7 @@ const images = [
   { url: "https://picsum.photos/id/239/200/300" },
 ];
 
-let errorMessage = document.getElementById('error');
-
-btn.addEventListener("click", () => {
-  let arr = [];
-  for (let img of images) {
-    arr.push(downloadImage(img.url));
-  }
-
-  Promise.all(arr)
-    .then(res => {
-      console.log(res);
-      for (let t of res) {
-        let img = document.createElement('img');
-        img.src = t.image;
-        output.append(img);
-      }
-    })
-    .catch(error => {
-      console.log("Error :- ", error);
-      errorMessage.innerText = error;
-    });
-});
+btn.addEventListener("click", downloadImages);
 
 function downloadImage(link) {
   return new Promise((resolve, reject) => {
@@ -47,4 +28,27 @@ function downloadImage(link) {
       }, 3000);
     }
   });
+}
+
+function downloadImages() {
+  output.innerHTML = ""; // Clear previous images
+  errorMessage.innerText = ""; // Clear previous error messages
+  loading.style.display = "block"; // Show loading spinner
+
+  let downloadPromises = images.map(img => downloadImage(img.url));
+
+  Promise.all(downloadPromises)
+    .then(res => {
+      res.forEach(t => {
+        let img = document.createElement('img');
+        img.src = t.image;
+        output.append(img);
+      });
+    })
+    .catch(error => {
+      errorMessage.innerText = error;
+    })
+    .finally(() => {
+      loading.style.display = "none"; // Hide loading spinner
+    });
 }
