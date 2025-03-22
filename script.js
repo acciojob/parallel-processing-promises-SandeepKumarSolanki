@@ -13,18 +13,18 @@ btn.addEventListener("click", downloadImages);
 
 function downloadImage(link) {
   return new Promise((resolve, reject) => {
-    let random = parseInt(Math.random() * 10000);
+    let random = Math.random(); // Generate random number between 0 and 1
 
-    if (random % 2 === 0 && typeof link === "string" && link.startsWith("https")) {
+    if (random > 0.3 && typeof link === "string" && link.startsWith("https")) {
       setTimeout(() => {
         resolve({
           image: link,
-          message: "Image download successfully"
+          message: "Image downloaded successfully"
         });
       }, 3000);
     } else {
       setTimeout(() => {
-        reject(`Image download failed: ${link}`);
+        reject(`❌ Failed to download: ${link}`);
       }, 3000);
     }
   });
@@ -37,16 +37,25 @@ function downloadImages() {
 
   let downloadPromises = images.map(img => downloadImage(img.url));
 
-  Promise.all(downloadPromises)
-    .then(res => {
-      res.forEach(t => {
-        let img = document.createElement('img');
-        img.src = t.image;
-        output.append(img);
+  // Use `Promise.allSettled()` instead of `Promise.all()`
+  Promise.allSettled(downloadPromises)
+    .then(results => {
+      let failedDownloads = [];
+
+      results.forEach(result => {
+        if (result.status === "fulfilled") {
+          let img = document.createElement('img');
+          img.src = result.value.image;
+          output.append(img);
+        } else {
+          failedDownloads.push(result.reason);
+        }
       });
-    })
-    .catch(error => {
-      errorMessage.innerText = error;
+
+      // Display errors for all failed images
+      if (failedDownloads.length > 0) {
+        errorMessage.innerText = failedDownloads.join("\n");
+      }
     })
     .finally(() => {
       loading.style.display = "none"; // Hide loading spinner
